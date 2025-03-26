@@ -420,8 +420,18 @@ end
 -- @usage local heirline_component = { provider = require("astroui.status").provider.git_branch() }
 -- @see astroui.status.utils.stylize
 function M.git_branch(opts)
+  vim.print(opts)
   opts = extend_tbl(vim.tbl_get(config, "providers", "git_branch"), opts)
-  return function(self) return status_utils.stylize(vim.b[self and self.bufnr or 0].gitsigns_head or "", opts) end
+  return function(self)
+    local bufnr, branch = self and self.bufnr or 0, nil
+    if vim.b[bufnr].gitsigns_head then -- gitsigns support
+      branch = vim.b[bufnr].gitsigns_head
+    elseif vim.b[bufnr].minigit_summary then -- mini.git support
+      branch = vim.b[bufnr].minigit_summary.head_name
+    end
+    vim.print(vim.b[bufnr].minigit_summary)
+    return status_utils.stylize(branch or "", opts)
+  end
 end
 
 local minidiff_types = { added = "add", changed = "change", removed = "delete" }
